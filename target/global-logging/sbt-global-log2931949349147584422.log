@@ -1,0 +1,20 @@
+[debug] > Exec(reload, None, None)
+[debug] > Exec(sbtStashOnFailure, None, None)
+[debug] > Exec(onFailure loadFailed, None, None)
+[debug] > Exec(loadp, None, None)
+[info] welcome to sbt 1.8.1 (Amazon.com Inc. Java 11.0.25)
+[debug]             Load.defaultLoad until apply took 1.4877ms
+[debug]                       Load.loadUnit: plugins took 26.604ms
+[debug]                       Load.loadUnit: defsScala took 0.0081ms
+[debug] [Loading] Scanning directory C:\Users\pc\IdeaProjects\TSP\project
+[debug]                         Load.loadUnit: mkEval took 0.3827ms
+[error] [C:\Users\pc\IdeaProjects\TSP\project\plugins.sbt]:1: ';' expected but double literal found.
+[debug] > Exec(loadFailed, None, None)
+[warn] Project loading failed: (r)etry, (q)uit, (l)ast, or (i)gnore? (default: r)
+[warn] Project loading failed: (r)etry, (q)uit, (l)ast, or (i)gnore? (default: r)
+[debug] > Exec(last, None, None)
+[debug] > Exec(loadFailed, None, None)
+[warn] Project loading failed: (r)etry, (q)uit, (l)ast, or (i)gnore? (default: r)
+[warn] Project loading failed: (r)etry, (q)uit, (l)ast, or (i)gnore? (default: r)
+[warn] Project loading failed: (r)etry, (q)uit, (l)ast, or (i)gnore? (default: r)
+[warn] Project loading failed: (r)etry, (q)uit, (l)ast, or (i)gnore? (default: r)
