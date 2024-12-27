@@ -3,7 +3,6 @@ import spray.json.DefaultJsonProtocol._
 import spray.json._
 
 import scala.io.Source
-import scala.util.matching.Regex
 
 case class UserEntity(
                        id: Long,
@@ -55,45 +54,13 @@ class TwitterDataGenerator(filePath: String) {
   private var tweets: List[Tweet] = loadTweets()
   private var currentIndex = 0
 
-
-  private def removeUrlsFromText(text: String): String = {
-
-    val urlPattern: Regex = """http[s]?://\S+""".r
-    urlPattern.replaceAllIn(text, "")
-  }
-
-
-  private def removeUrlsFromEntities(entities: Entities): Entities = {
-    entities.copy(urls = List())
-  }
-
-
-  private def removeUrlsFromSource(source: String): String = {
-
-    val urlPattern: Regex = """<a href=["'](http[^"']+)["'][^>]*>[^<]+</a>""".r
-    urlPattern.replaceAllIn(source, "")
-  }
-
   private def loadTweets(): List[Tweet] = {
     try {
       val source = Source.fromFile(s"src/main/resources/data/$filePath")
       val content = source.getLines().map { line =>
+
         try {
-
-          val tweet = line.parseJson.convertTo[Tweet]
-
-
-          val cleanedText = removeUrlsFromText(tweet.text)
-
-
-          val cleanedEntities = removeUrlsFromEntities(tweet.entities)
-
-
-          val cleanedSource = removeUrlsFromSource(tweet.source)
-
-
-          val cleanedTweet = tweet.copy(text = cleanedText, entities = cleanedEntities, source = cleanedSource)
-          Some(cleanedTweet)
+          Some(line.parseJson.convertTo[Tweet])
         } catch {
           case e: Exception =>
             println(s"Error parsing tweet: ${e.getMessage}")
