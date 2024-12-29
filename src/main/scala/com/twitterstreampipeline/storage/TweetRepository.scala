@@ -13,16 +13,6 @@ object TweetRepository {
 
   private val collection: MongoCollection[BsonDocument] = MongoDBConnector.getCollection("tweets")
 
-  private def observableToFuture[T](observable: Observable[T]): Future[T] = {
-    val promise = Promise[T]()
-    observable.subscribe(
-      (result: T) => promise.success(result),
-      (error: Throwable) => promise.failure(error),
-      () => ()
-    )
-    promise.future
-  }
-
   def createIndexes(): Future[Seq[String]] = {
     val indexes = List(
       IndexModel(Indexes.ascending("id"), IndexOptions().unique(true).name("unique_tweet_id")),
@@ -32,7 +22,6 @@ object TweetRepository {
       IndexModel(Indexes.ascending("hashtags"), IndexOptions().name("hashtag_index")),
       IndexModel(Indexes.text("text"), IndexOptions().name("text_search_index")),
       IndexModel(Indexes.ascending("sentiment.label"), IndexOptions().name("sentiment_index")),
-      IndexModel(Indexes.ascending("language"), IndexOptions().name("language_index"))
     )
 
     collection.createIndexes(indexes).toFuture().map { result =>
@@ -44,8 +33,6 @@ object TweetRepository {
         throw e
     }
   }
-
-
   def storeTweets(tweetsData: Seq[Map[String, Any]]): Future[Unit] = {
     try {
       val validDocuments = tweetsData.filter(tweetData => tweetData.contains("id") && tweetData.contains("text")).map { tweetData =>
@@ -60,7 +47,6 @@ object TweetRepository {
             case Some(tags: String) => BsonArray(tags.split(",").map(tag => BsonString(tag.trim)))
             case _ => BsonArray()
           }),
-          "language" -> BsonString(tweetData.getOrElse("language", "").toString),
           "sentiment" -> BsonDocument(
             "label" -> BsonString(tweetData.getOrElse("sentimentLabel", "neutral").toString)
           ),
@@ -81,12 +67,4 @@ object TweetRepository {
         Future.failed(e)
     }
   }
-
-
-
-
-
-
-
-
 }
