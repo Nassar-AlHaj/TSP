@@ -75,8 +75,6 @@ object MainApp extends App {
 
     val query = processedDF.writeStream
       .foreachBatch { (batchDF: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row], batchId: Long) =>
-        batchDF.show(false)
-
         val tweetsData: Seq[Map[String, Any]] = batchDF.collect().map { row =>
           Map[String, Any](
             "id" -> row.getAs[String]("id"),
@@ -91,9 +89,12 @@ object MainApp extends App {
 
         if (tweetsData.nonEmpty) {
           val future = TweetRepository.storeTweets(tweetsData)
+          val numberOfTweets = tweetsData.size
           future.onComplete {
-            case Success(_) => println(s"Successfully stored tweets batch: $batchId")
-            case Failure(e) => println(s"Error storing tweets batch $batchId: ${e.getMessage}")
+            case Success(_) =>
+              val currentTime = java.time.LocalDateTime.now()
+              println(s"Successfully stored $numberOfTweets tweets at $currentTime")
+            case Failure(_) =>
           }
         }
       }
@@ -102,7 +103,6 @@ object MainApp extends App {
       .start()
 
     query.awaitTermination()
-
   }
 
   try {

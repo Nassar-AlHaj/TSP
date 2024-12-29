@@ -123,4 +123,5 @@ object TweetKafkaConsumer {
         System.exit(1)
     }
   }
+
 }

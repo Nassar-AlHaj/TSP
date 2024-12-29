@@ -13,16 +13,6 @@ object TweetRepository {
 
   private val collection: MongoCollection[BsonDocument] = MongoDBConnector.getCollection("tweets")
 
-  private def observableToFuture[T](observable: Observable[T]): Future[T] = {
-    val promise = Promise[T]()
-    observable.subscribe(
-      (result: T) => promise.success(result),
-      (error: Throwable) => promise.failure(error),
-      () => ()
-    )
-    promise.future
-  }
-
   def createIndexes(): Future[Seq[String]] = {
     val indexes = List(
       IndexModel(Indexes.ascending("id"), IndexOptions().unique(true).name("unique_tweet_id")),
@@ -43,8 +33,6 @@ object TweetRepository {
         throw e
     }
   }
-
-
   def storeTweets(tweetsData: Seq[Map[String, Any]]): Future[Unit] = {
     try {
       val validDocuments = tweetsData.filter(tweetData => tweetData.contains("id") && tweetData.contains("text")).map { tweetData =>
@@ -79,12 +67,4 @@ object TweetRepository {
         Future.failed(e)
     }
   }
-
-
-
-
-
-
-
-
 }
