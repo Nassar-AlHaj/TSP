@@ -15,7 +15,9 @@ object MainApp extends App {
 
   def initializeMongoDB(): Unit = {
     try {
-      val indexesFuture = TweetRepository.createIndexes()
+      val indexesFuture = Future {
+        TweetRepository.createIndexes()
+      }
       Await.result(indexesFuture, 30.seconds)
       println("MongoDB indexes created successfully")
     } catch {
@@ -24,6 +26,7 @@ object MainApp extends App {
         System.exit(1)
     }
   }
+
 
   val kafkaConfig = KafkaConfig(
     bootstrapServers = "localhost:9092",
@@ -45,7 +48,6 @@ object MainApp extends App {
             val future = kafkaProducer.sendTweet(tweet)
             future.onComplete {
               case Success(_) =>
-                println(s"Sent tweet: ${tweet.id_str}")
               case Failure(e) =>
                 println(s"Error sending tweet: ${e.getMessage}")
             }
@@ -67,43 +69,52 @@ object MainApp extends App {
     }
   }
 
+
   def startProcessingWithStorage(): Unit = {
     val spark = TweetKafkaConsumer.createSparkSession()
     val kafkaDF = TweetKafkaConsumer.readFromKafka(spark)
-    val pipeline = new com.johnsnowlabs.nlp.pretrained.PretrainedPipeline("analyze_sentiment", lang = "en")
+    val pipeline = new com.johnsnowlabs.nlp.pretrained.PretrainedPipeline("analyze_sentiment")
     val processedDF = TweetKafkaConsumer.processTweets(kafkaDF, pipeline)
 
-    val query = processedDF.writeStream
+    val query = processedDF
+      .writeStream
       .foreachBatch { (batchDF: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row], batchId: Long) =>
-        val tweetsData: Seq[Map[String, Any]] = batchDF.collect().map { row =>
-          Map[String, Any](
-            "id" -> row.getAs[String]("id"),
-            "text" -> row.getAs[String]("text"),
-            "username" -> row.getAs[String]("username"),
-            "timestamp" -> row.getAs[java.sql.Timestamp]("timestamp").toString,
-            "hashtags" -> row.getAs[Seq[String]]("hashtags"),
-            "sentimentLabel" -> row.getAs[String]("sentiment"),
-            "processed_at" -> row.getAs[java.sql.Timestamp]("processed_at").toString
-          )
-        }.toSeq
+        val tweetsData: Seq[Map[String, Any]] = batchDF
+          .coalesce(1)
+          .limit(10)
+          .collect()
+          .map { row =>
+            Map[String, Any](
+              "id" -> row.getAs[String]("id"),
+              "text" -> row.getAs[String]("text"),
+              "username" -> row.getAs[String]("username"),
+              "timestamp" -> row.getAs[java.sql.Timestamp]("timestamp").toString,
+              "hashtags" -> row.getAs[Seq[String]]("hashtags"),
+              "sentimentLabel" -> row.getAs[String]("sentiment"),
+              "processed_at" -> row.getAs[java.sql.Timestamp]("processed_at").toString
+            )
+          }.toSeq
 
         if (tweetsData.nonEmpty) {
-          val future = TweetRepository.storeTweets(tweetsData)
-          val numberOfTweets = tweetsData.size
-          future.onComplete {
-            case Success(_) =>
-              val currentTime = java.time.LocalDateTime.now()
-              println(s"Successfully stored $numberOfTweets tweets at $currentTime")
-            case Failure(_) =>
+          import scala.concurrent.duration._
+          import scala.concurrent.Await
+
+          try {
+            Await.result(TweetRepository.storeTweets(tweetsData), 10.seconds)
+            println(s"Batch $batchId: Successfully stored ${tweetsData.size} tweets.")
+          } catch {
+            case e: Exception =>
+              println(s"Batch $batchId: Error storing tweets: ${e.getMessage}")
           }
         }
       }
-      .outputMode(OutputMode.Append())
-      .trigger(Trigger.ProcessingTime("5 seconds"))
+      .outputMode(OutputMode.Update())
+      .trigger(Trigger.ProcessingTime("10 seconds"))
       .start()
 
     query.awaitTermination()
   }
+
 
   try {
     println("Initializing MongoDB...")

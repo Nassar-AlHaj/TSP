@@ -35,7 +35,7 @@ object TweetKafkaConsumer {
     SparkSession.builder()
       .appName("TweetProcessor")
       .master("local[*]")
-      .config("spark.sql.streaming.checkpointLocation", "./checkpoints")
+      .config("spark.sql.streaming.checkpointLocation", "C:/tmp/bigdata/kafka")
       .config("spark.sql.legacy.timeParserPolicy", "LEGACY")
       .getOrCreate()
   }

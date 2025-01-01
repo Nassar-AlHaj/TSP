@@ -271,10 +271,12 @@
     <orderEntry type="library" name="sbt: org.lz4:lz4-java:1.8.0:jar" level="project" />
     <orderEntry type="library" name="sbt: org.mongodb.scala:mongo-scala-bson_2.12:4.9.0:jar" level="project" />
     <orderEntry type="library" name="sbt: org.mongodb.scala:mongo-scala-driver_2.12:4.9.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.mongodb.spark:mongo-spark-connector_2.12:3.0.1:jar" level="project" />
     <orderEntry type="library" name="sbt: org.mongodb:bson-record-codec:4.9.0:jar" level="project" />
     <orderEntry type="library" name="sbt: org.mongodb:bson:4.9.0:jar" level="project" />
     <orderEntry type="library" name="sbt: org.mongodb:mongodb-driver-core:4.9.0:jar" level="project" />
     <orderEntry type="library" name="sbt: org.mongodb:mongodb-driver-reactivestreams:4.9.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.mongodb:mongodb-driver-sync:4.0.5:jar" level="project" />
     <orderEntry type="library" name="sbt: org.objenesis:objenesis:2.5.1:jar" level="project" />
     <orderEntry type="library" name="sbt: org.projectlombok:lombok:1.16.8:jar" level="project" />
     <orderEntry type="library" name="sbt: org.reactivestreams:reactive-streams:1.0.4:jar" level="project" />

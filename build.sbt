@@ -6,7 +6,11 @@ lazy val root = (project in file("."))
     name := "TSP"
   )
 
+
 libraryDependencies ++= Seq(
+
+
+  "org.mongodb.spark" %% "mongo-spark-connector" % "3.0.1",
   "org.apache.kafka" % "kafka-clients" % "3.6.1",
   "org.apache.spark" %% "spark-core" % "3.5.3",
   "org.apache.spark" %% "spark-sql" % "3.5.3",

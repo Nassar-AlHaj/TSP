@@ -5,7 +5,7 @@ import org.mongodb.scala.bson._
 import org.mongodb.scala.model._
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
 
 object TweetRepository {
@@ -13,10 +13,12 @@ object TweetRepository {
 
   private val collection: MongoCollection[BsonDocument] = MongoDBConnector.getCollection("tweets")
 
+
+
+
   def createIndexes(): Future[Seq[String]] = {
     val indexes = List(
       IndexModel(Indexes.ascending("id"), IndexOptions().unique(true).name("unique_tweet_id")),
-      IndexModel(Indexes.ascending("userId"), IndexOptions().name("user_index")),
       IndexModel(Indexes.ascending("username"), IndexOptions().name("username_index")),
       IndexModel(Indexes.ascending("timestamp"), IndexOptions().name("timestamp_index")),
       IndexModel(Indexes.ascending("hashtags"), IndexOptions().name("hashtag_index")),
@@ -33,13 +35,20 @@ object TweetRepository {
         throw e
     }
   }
+
+
+
+
+
+
+
+
   def storeTweets(tweetsData: Seq[Map[String, Any]]): Future[Unit] = {
     try {
       val validDocuments = tweetsData.filter(tweetData => tweetData.contains("id") && tweetData.contains("text")).map { tweetData =>
         BsonDocument(
           "id" -> BsonString(tweetData.getOrElse("id", "").toString),
           "text" -> BsonString(tweetData.getOrElse("text", "").toString),
-          "userId" -> BsonString(tweetData.getOrElse("userId", "").toString),
           "username" -> BsonString(tweetData.getOrElse("username", "").toString),
           "timestamp" -> BsonString(tweetData.getOrElse("timestamp", "").toString),
           "hashtags" -> (tweetData.get("hashtags") match {
@@ -57,6 +66,10 @@ object TweetRepository {
       if (validDocuments.nonEmpty) {
         collection.insertMany(validDocuments).toFuture().map { _ =>
           logger.info(s"Stored ${validDocuments.size} tweets in batch.")
+        }.recover {
+          case e: Exception =>
+            logger.error(s"Failed to store batch of tweets: ${e.getMessage}")
+            throw e
         }
       } else {
         Future.successful(logger.info("No valid tweets to store in this batch."))
@@ -67,4 +80,6 @@ object TweetRepository {
         Future.failed(e)
     }
   }
+
+
 }
