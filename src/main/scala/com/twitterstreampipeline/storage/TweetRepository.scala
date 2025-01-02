@@ -16,25 +16,6 @@ object TweetRepository {
 
 
 
-  def createIndexes(): Future[Seq[String]] = {
-    val indexes = List(
-      IndexModel(Indexes.ascending("id"), IndexOptions().unique(true).name("unique_tweet_id")),
-      IndexModel(Indexes.ascending("username"), IndexOptions().name("username_index")),
-      IndexModel(Indexes.ascending("timestamp"), IndexOptions().name("timestamp_index")),
-      IndexModel(Indexes.ascending("hashtags"), IndexOptions().name("hashtag_index")),
-      IndexModel(Indexes.text("text"), IndexOptions().name("text_search_index")),
-      IndexModel(Indexes.ascending("sentiment.label"), IndexOptions().name("sentiment_index")),
-    )
-
-    collection.createIndexes(indexes).toFuture().map { result =>
-      logger.info(s"Created ${result.size} indexes successfully.")
-      result
-    }.recover {
-      case e: Exception =>
-        logger.error(s"Error creating indexes: ${e.getMessage}")
-        throw e
-    }
-  }
 
 
 

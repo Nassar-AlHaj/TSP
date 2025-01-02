@@ -16,10 +16,8 @@ object MainApp extends App {
   def initializeMongoDB(): Unit = {
     try {
       val indexesFuture = Future {
-        TweetRepository.createIndexes()
       }
       Await.result(indexesFuture, 30.seconds)
-      println("MongoDB indexes created successfully")
     } catch {
       case e: Exception =>
         println(s"Failed to initialize MongoDB: ${e.getMessage}")
