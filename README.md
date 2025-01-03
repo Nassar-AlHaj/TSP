@@ -195,7 +195,8 @@ Backend Features:
 
 ## Figure showing the different parts of the pipeline along with details for each part :
 
-![img.png](img.png)
+![image](https://github.com/user-attachments/assets/c9624393-2376-4543-b71e-69da66759ffe)
+
 
 
 
